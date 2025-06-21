@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小兔回家 - 儿童汉字学习游戏</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Comic Sans MS', 'Marker Felt', '幼圆', sans-serif;
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #333;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 25px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .header {
+            background: linear-gradient(to right, #ff9a9e, #fad0c4);
+            padding: 20px;
+            text-align: center;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .title {
+            color: #fff;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #5d4037;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+        }
+        
+        .game-container {
+            padding: 20px;
+            min-height: 500px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* 场景背景 */
+        .scene {
+            height: 400px;
+            border-radius: 15px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 20px;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* 真实的小兔子形象 */
+        .bunny {
+            position: absolute;
+            transform: scaleX(-1);
+            bottom: 40px;
+            left: -100px;
+            width: 100px;
+            height: 100px;
+            background: url('https://img.dexbug.com/i/2025/06/21/r9zxhb.gif') no-repeat center;
+            background-size: contain;
+            transition: left 1.5s ease-in-out;
+            z-index: 20;
+        }
+        
+        /* 路径点 */
+        .location-point {
+            position: absolute;
+            bottom: 30px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            color: #5d4037;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+            z-index: 15;
+        }
+        
+        /* 汉字卡片容器 */
+        .cards-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .card {
+            width: 100px;
+            height: 140px;
+            background: #fff9c4;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, transparent 50%, rgba(255,255,255,0.3) 100%);
+            pointer-events: none;
+        }
+        
+        .hanzi {
+            font-size: 48px;
+            margin-bottom: 5px;
+        }
+        
+        .pinyin {
+            font-size: 20px;
+            color: #d32f2f;
+            font-weight: bold;
+            background: rgba(255, 255, 255, 0.7);
+            padding: 3px 8px;
+            border-radius: 10px;
+        }
+        
+        .card.correct {
+            background: #c8e6c9;
+            transform: scale(1.05);
+            box-shadow: 0 0 25px rgba(76, 175, 80, 0.5);
+        }
+        
+        .card.correct .pinyin {
+            color: #2e7d32;
+        }
+        
+        .card.wrong {
+            background: #ffcdd2;
+            animation: shake 0.5s ease-in-out;
+        }
+        
+        .card.wrong .pinyin {
+            color: #b71c1c;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-10px); }
+            40%, 80% { transform: translateX(10px); }
+        }
+        
+        /* 控制面板 */
+        .control-panel {
+            background: #f5f5f5;
+            padding: 20px;
+            border-top: 2px dashed #ff9a9e;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .difficulty-selector {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(to right, #ff9a9e, #fad0c4);
+            color: white;
+            box-shadow: 0 4px 10px rgba(255, 154, 158, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 15px rgba(255, 154, 158, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #5d4037;
+        }
+        
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+        
+        .btn-difficulty {
+            padding: 8px 15px;
+            background: #d1f7d1;
+            color: #2e7d32;
+            border: 2px solid #a5d6a7;
+        }
+        
+        .btn-difficulty.active {
+            background: #ff6b6b;
+            color: white;
+            border-color: #ff5252;
+        }
+        
+        .progress-container {
+            flex: 1;
+            max-width: 300px;
+        }
+        
+        .progress-bar {
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(to right, #a8edea, #fed6e3);
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .status {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .score {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #ff9a9e;
+        }
+        
+        /* 开始和结束界面 */
+        .screen {
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .welcome-screen h2 {
+            font-size: 2.5rem;
+            color: #ff9a9e;
+            margin-bottom: 20px;
+        }
+        
+        .welcome-screen p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            line-height: 1.6;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .home-icon {
+            font-size: 5rem;
+            color: #ff9a9e;
+            margin: 30px 0;
+            animation: bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        .success-screen h2 {
+            font-size: 3rem;
+            color: #4caf50;
+            margin-bottom: 20px;
+        }
+        
+        .character-display {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+        
+        .learned-character {
+            width: 80px;
+            height: 100px;
+            background: #fff9c4;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+        }
+        
+        .learned-hanzi {
+            font-size: 36px;
+        }
+        
+        .learned-pinyin {
+            font-size: 16px;
+            color: #d32f2f;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        
+        .level-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .title {
+                font-size: 2rem;
+            }
+            
+            .card {
+                width: 80px;
+                height: 120px;
+            }
+            
+            .hanzi {
+                font-size: 40px;
+            }
+            
+            .pinyin {
+                font-size: 18px;
+            }
+            
+            .control-panel {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .difficulty-selector {
+                justify-content: center;
+            }
+            
+            .level-controls {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .title {
+                font-size: 1.8rem;
+            }
+            
+            .card {
+                width: 70px;
+                height: 110px;
+            }
+            
+            .hanzi {
+                font-size: 36px;
+            }
+            
+            .pinyin {
+                font-size: 16px;
+            }
+            
+            .btn {
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+        }
+        
+        /* 欢迎界面 */
+        .welcome-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .start-btn {
+            margin-top: 20px;
+            padding: 15px 40px;
+            font-size: 1.5rem;
+        }
+        
+        /* 错误提示 */
+        .error-message {
+            color: #d32f2f;
+            background: #ffebee;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title"><i class="fas fa-paw"></i> 小兔回家 <i class="fas fa-home"></i></h1>
+            <p class="subtitle">帮助小兔子回家，学习有趣的汉字和拼音！</p>
+        </div>
+        
+        <div class="game-container">
+            <!-- 初始欢迎界面 -->
+            <div class="screen welcome-screen">
+                <div class="home-icon">
+                    <i class="fas fa-home"></i>
+                </div>
+                <h2>欢迎来到小兔回家！</h2>
+                <p>帮助可爱的小兔子跳过障碍，学习汉字回家吧！</p>
+                <p>游戏规则：根据听到的发音，选择正确的汉字卡片。每答对一题，小兔子就会向前一步！</p>
+                <button id="start-btn" class="btn btn-primary start-btn">
+                    <i class="fas fa-play"></i> 开始游戏
+                </button>
+                <div id="voice-error" class="error-message" style="display: none;">
+                    您的浏览器不支持语音功能，请使用最新版Chrome或Edge浏览器
+                </div>
+            </div>
+        </div>
+        
+        <div class="control-panel" style="display: none;">
+            <div class="difficulty-selector">
+                <button class="btn btn-difficulty active" data-level="easy">初级</button>
+                <button class="btn btn-difficulty" data-level="medium">中级</button>
+                <button class="btn btn-difficulty" data-level="hard">高级</button>
+            </div>
+            
+            <div class="status">
+                <div>分数: <span class="score" id="score">0</span></div>
+            </div>
+            
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+                </div>
+            </div>
+            
+            <button id="restart-btn" class="btn btn-secondary"><i class="fas fa-redo"></i> 重新开始</button>
+            <button id="speak-btn" class="btn btn-primary"><i class="fas fa-volume-up"></i> 再听一次</button>
+        </div>
+    </div>
+
+    <script>
+        // 常用3500字库（按难易程度排列，带拼音）
+        const commonCharacters = [
+            { char: '一', pinyin: 'yī' },
+            { char: '二', pinyin: 'èr' },
+            { char: '三', pinyin: 'sān' },
+            { char: '十', pinyin: 'shí' },
+            { char: '人', pinyin: 'rén' },
+            { char: '口', pinyin: 'kǒu' },
+            { char: '手', pinyin: 'shǒu' },
+            { char: '日', pinyin: 'rì' },
+            { char: '月', pinyin: 'yuè' },
+            { char: '水', pinyin: 'shuǐ' },
+            { char: '火', pinyin: 'huǒ' },
+            { char: '木', pinyin: 'mù' },
+            { char: '山', pinyin: 'shān' },
+            { char: '石', pinyin: 'shí' },
+            { char: '田', pinyin: 'tián' },
+            { char: '土', pinyin: 'tǔ' },
+            { char: '大', pinyin: 'dà' },
+            { char: '小', pinyin: 'xiǎo' },
+            { char: '上', pinyin: 'shàng' },
+            { char: '下', pinyin: 'xià' },
+            { char: '中', pinyin: 'zhōng' },
+            { char: '天', pinyin: 'tiān' },
+            { char: '地', pinyin: 'dì' },
+            { char: '生', pinyin: 'shēng' },
+            { char: '花', pinyin: 'huā' },
+            { char: '草', pinyin: 'cǎo' },
+            { char: '树', pinyin: 'shù' },
+            { char: '云', pinyin: 'yún' },
+            { char: '雨', pinyin: 'yǔ' },
+            { char: '风', pinyin: 'fēng' },
+            { char: '星', pinyin: 'xīng' },
+            { char: '光', pinyin: 'guāng' },
+            { char: '书', pinyin: 'shū' },
+            { char: '门', pinyin: 'mén' },
+            { char: '车', pinyin: 'chē' },
+            { char: '马', pinyin: 'mǎ' },
+            { char: '鸟', pinyin: 'niǎo' },
+            { char: '鱼', pinyin: 'yú' },
+            { char: '家', pinyin: 'jiā' },
+            { char: '园', pinyin: 'yuán' },
+            { char: '学', pinyin: 'xué' },
+            { char: '校', pinyin: 'xiào' },
+            { char: '朋', pinyin: 'péng' },
+            { char: '友', pinyin: 'yǒu' },
+            { char: '老', pinyin: 'lǎo' },
+            { char: '师', pinyin: 'shī' },
+            { char: '爸', pinyin: 'bà' },
+            { char: '妈', pinyin: 'mā' },
+            { char: '哥', pinyin: 'gē' },
+            { char: '姐', pinyin: 'jiě' },
+            { char: '弟', pinyin: 'dì' },
+            { char: '妹', pinyin: 'mèi' },
+            { char: '爷', pinyin: 'yé' },
+            { char: '奶', pinyin: 'nǎi' },
+            { char: '猫', pinyin: 'māo' },
+            { char: '狗', pinyin: 'gǒu' },
+            { char: '兔', pinyin: 'tù' },
+            { char: '羊', pinyin: 'yáng' },
+            { char: '牛', pinyin: 'niú' },
+            { char: '鸡', pinyin: 'jī' },
+            { char: '鸭', pinyin: 'yā' },
+            { char: '鹅', pinyin: 'é' },
+            { char: '红', pinyin: 'hóng' },
+            { char: '黄', pinyin: 'huáng' },
+            { char: '蓝', pinyin: 'lán' },
+            { char: '绿', pinyin: 'lǜ' },
+            { char: '白', pinyin: 'bái' },
+            { char: '黑', pinyin: 'hēi' },
+            { char: '吃', pinyin: 'chī' },
+            { char: '喝', pinyin: 'hē' },
+            { char: '玩', pinyin: 'wán' },
+            { char: '乐', pinyin: 'lè' },
+            { char: '跑', pinyin: 'pǎo' },
+            { char: '跳', pinyin: 'tiào' },
+            { char: '看', pinyin: 'kàn' },
+            { char: '听', pinyin: 'tīng' },
+            { char: '说', pinyin: 'shuō' },
+            { char: '读', pinyin: 'dú' },
+            { char: '写', pinyin: 'xiě' },
+            { char: '画', pinyin: 'huà' },
+            { char: '唱', pinyin: 'chàng' },
+            { char: '歌', pinyin: 'gē' },
+            { char: '舞', pinyin: 'wǔ' },
+            { char: '笑', pinyin: 'xiào' },
+            { char: '哭', pinyin: 'kū' },
+            { char: '爱', pinyin: 'ài' },
+            { char: '喜', pinyin: 'xǐ' },
+            { char: '欢', pinyin: 'huān' },
+            { char: '好', pinyin: 'hǎo' },
+            { char: '美', pinyin: 'měi' },
+            { char: '丽', pinyin: 'lì' },
+            { char: '高', pinyin: 'gāo' },
+            { char: '矮', pinyin: 'ǎi' },
+            { char: '胖', pinyin: 'pàng' },
+            { char: '瘦', pinyin: 'shòu' },
+            { char: '长', pinyin: 'cháng' },
+            { char: '短', pinyin: 'duǎn' },
+            { char: '方', pinyin: 'fāng' },
+            { char: '圆', pinyin: 'yuán' },
+            { char: '前', pinyin: 'qián' },
+            { char: '后', pinyin: 'hòu' },
+            { char: '左', pinyin: 'zuǒ' },
+            { char: '右', pinyin: 'yòu' },
+            { char: '春', pinyin: 'chūn' },
+            { char: '夏', pinyin: 'xià' },
+            { char: '秋', pinyin: 'qiū' },
+            { char: '冬', pinyin: 'dōng' },
+            { char: '东', pinyin: 'dōng' },
+            { char: '南', pinyin: 'nán' },
+            { char: '西', pinyin: 'xī' },
+            { char: '北', pinyin: 'běi' },
+            { char: '头', pinyin: 'tóu' },
+            { char: '目', pinyin: 'mù' },
+            { char: '耳', pinyin: 'ěr' },
+            { char: '鼻', pinyin: 'bí' },
+            { char: '嘴', pinyin: 'zuǐ' },
+            { char: '牙', pinyin: 'yá' },
+            { char: '舌', pinyin: 'shé' },
+            { char: '心', pinyin: 'xīn' },
+            { char: '脚', pinyin: 'jiǎo' },
+            { char: '腿', pinyin: 'tuǐ' },
+            { char: '身', pinyin: 'shēn' },
+            { char: '衣', pinyin: 'yī' },
+            { char: '裤', pinyin: 'kù' },
+            { char: '鞋', pinyin: 'xié' },
+            { char: '帽', pinyin: 'mào' },
+            { char: '袜', pinyin: 'wà' },
+            { char: '饭', pinyin: 'fàn' },
+            { char: '菜', pinyin: 'cài' },
+            { char: '米', pinyin: 'mǐ' },
+            { char: '面', pinyin: 'miàn' },
+            { char: '包', pinyin: 'bāo' },
+            { char: '果', pinyin: 'guǒ' },
+            { char: '瓜', pinyin: 'guā' },
+            { char: '豆', pinyin: 'dòu' },
+            { char: '茶', pinyin: 'chá' },
+            { char: '水', pinyin: 'shuǐ' },
+            { char: '汤', pinyin: 'tāng' },
+            { char: '油', pinyin: 'yóu' },
+            { char: '盐', pinyin: 'yán' },
+            { char: '糖', pinyin: 'táng' },
+            { char: '醋', pinyin: 'cù' },
+            { char: '房', pinyin: 'fáng' },
+            { char: '屋', pinyin: 'wū' },
+            { char: '床', pinyin: 'chuáng' },
+            { char: '桌', pinyin: 'zhuō' },
+            { char: '椅', pinyin: 'yǐ' },
+            { char: '灯', pinyin: 'dēng' },
+            { char: '窗', pinyin: 'chuāng' },
+            { char: '门', pinyin: 'mén' },
+            { char: '碗', pinyin: 'wǎn' },
+            { char: '筷', pinyin: 'kuài' },
+            { char: '杯', pinyin: 'bēi' },
+            { char: '盘', pinyin: 'pán' },
+            { char: '勺', pinyin: 'sháo' },
+            { char: '刀', pinyin: 'dāo' },
+            { char: '叉', pinyin: 'chā' },
+            { char: '锅', pinyin: 'guō' },
+            { char: '盆', pinyin: 'pén' },
+            { char: '桶', pinyin: 'tǒng' },
+            { char: '扫', pinyin: 'sǎo' },
+            { char: '擦', pinyin: 'cā' },
+            { char: '洗', pinyin: 'xǐ' },
+            { char: '刷', pinyin: 'shuā' },
+            { char: '开', pinyin: 'kāi' },
+            { char: '关', pinyin: 'guān' },
+            { char: '买', pinyin: 'mǎi' },
+            { char: '卖', pinyin: 'mài' },
+            { char: '送', pinyin: 'sòng' },
+            { char: '收', pinyin: 'shōu' },
+            { char: '给', pinyin: 'gěi' },
+            { char: '拿', pinyin: 'ná' },
+            { char: '放', pinyin: 'fàng' },
+            { char: '找', pinyin: 'zhǎo' },
+            { char: '等', pinyin: 'děng' },
+            { char: '坐', pinyin: 'zuò' },
+            { char: '站', pinyin: 'zhàn' },
+            { char: '走', pinyin: 'zǒu' },
+            { char: '跑', pinyin: 'pǎo' },
+            { char: '来', pinyin: 'lái' },
+            { char: '去', pinyin: 'qù' },
+            { char: '进', pinyin: 'jìn' },
+            { char: '出', pinyin: 'chū' },
+            { char: '回', pinyin: 'huí' },
+            { char: '过', pinyin: 'guò' },
+            { char: '起', pinyin: 'qǐ' },
+            { char: '睡', pinyin: 'shuì' },
+            { char: '醒', pinyin: 'xǐng' },
+            { char: '早', pinyin: 'zǎo' },
+            { char: '晚', pinyin: 'wǎn' },
+            { char: '快', pinyin: 'kuài' },
+            { char: '慢', pinyin: 'màn' },
+            { char: '多', pinyin: 'duō' },
+            { char: '少', pinyin: 'shǎo' },
+            { char: '新', pinyin: 'xīn' },
+            { char: '旧', pinyin: 'jiù' },
+            { char: '冷', pinyin: 'lěng' },
+            { char: '热', pinyin: 'rè' },
+            { char: '干', pinyin: 'gān' },
+            { char: '湿', pinyin: 'shī' }
+        ];
+
+        // 游戏数据
+        const gameData = {
+            currentLevel: 'easy',
+            currentStep: 0,
+            totalSteps: 5,
+            score: 0,
+            learnedCharacters: [],
+            difficultySettings: {
+                easy: {
+                    name: '初级',
+                    characters: commonCharacters.slice(0, 100),
+                    learnedChars: []
+                },
+                medium: {
+                    name: '中级',
+                    characters: commonCharacters.slice(100, 200),
+                    learnedChars: []
+                },
+                hard: {
+                    name: '高级',
+                    characters: commonCharacters.slice(200, 300),
+                    learnedChars: []
+                }
+            },
+            locations: [
+                { name: "小河边", background: "linear-gradient(to bottom, #87CEEB 30%, #E0F7FA 70%)" },
+                { name: "小桥上", background: "linear-gradient(to bottom, #A1887F 20%, #87CEEB 50%, #E0F7FA 80%)" },
+                { name: "池塘边", background: "linear-gradient(to bottom, #4DB6AC 30%, #80CBC4 70%)" },
+                { name: "花园里", background: "linear-gradient(to bottom, #81C784 30%, #C8E6C9 70%)" },
+                { name: "树林中", background: "linear-gradient(to bottom, #689F38 30%, #9CCC65 70%)" }
+            ],
+            currentLevelIndex: 0,
+            roundIndex: 0,
+            speechSupported: true
+        };
+
+        // DOM 元素
+        let scene, bunny, cardsContainer, scoreDisplay, progressFill, restartBtn, speakBtn, difficultyButtons;
+        
+        // 初始化游戏
+        function initGame() {
+            // 获取DOM元素
+            scene = document.getElementById('scene');
+            bunny = document.getElementById('bunny');
+            cardsContainer = document.getElementById('cards-container');
+            scoreDisplay = document.getElementById('score');
+            progressFill = document.getElementById('progress-fill');
+            restartBtn = document.getElementById('restart-btn');
+            speakBtn = document.getElementById('speak-btn');
+            difficultyButtons = document.querySelectorAll('.btn-difficulty');
+            
+            // 重置游戏数据
+            gameData.currentStep = 0;
+            gameData.score = 0;
+            gameData.learnedCharacters = [];
+            scoreDisplay.textContent = '0';
+            updateProgressBar();
+            
+            // 重置兔子位置
+            bunny.style.left = '-100px';
+            
+            // 设置初始场景
+            updateScene();
+            
+            // 生成第一组卡片
+            generateCards();
+            
+            // 移动兔子到第一个位置
+            setTimeout(() => {
+                moveBunnyToStep(0);
+            }, 500);
+            
+            // 检查语音支持
+            if (!('speechSynthesis' in window)) {
+                gameData.speechSupported = false;
+                document.getElementById('voice-error').style.display = 'block';
+            }
+        }
+
+        // 更新场景
+        function updateScene() {
+            const location = gameData.locations[gameData.currentStep];
+            scene.style.background = location.background;
+        }
+
+        <!-- // 移动兔子到指定步骤 -->
+        <!-- function moveBunnyToStep(step) { -->
+            <!-- const position = 8 + (step * 20); -->
+            <!-- bunny.style.left = `${position}%`; -->
+            
+            <!-- if (step >= gameData.totalSteps) { -->
+                <!-- setTimeout(showSuccessScreen, 1000); -->
+            <!-- } -->
+        <!-- } -->
+// 修改后的moveBunnyToStep函数
+function moveBunnyToStep(step) {
+    // 优化位置计算：起点8%，每个点间隔20%
+    let position;
+    if (step < gameData.totalSteps) {
+        position = 8 + (step * 15); // 8%, 28%, 48%, 68%, 88%
+    } else {
+        position = 90; // 终点位置90%
+    }
+    
+    bunny.style.left = `${position}%`;
+    
+    // 到达终点
+    if (step >= gameData.totalSteps) {
+        setTimeout(showSuccessScreen, 1000);
+    }
+}
+        // 生成汉字卡片
+        function generateCards() {
+            cardsContainer.innerHTML = '';
+            
+            const currentDifficulty = gameData.difficultySettings[gameData.currentLevel];
+            const characters = [...currentDifficulty.characters];
+            const learnedChars = [...currentDifficulty.learnedChars];
+            
+            let availableChars = characters.filter(char => 
+                !learnedChars.some(c => c.char === char.char) &&
+                !gameData.learnedCharacters.some(c => c.char === char.char)
+            );
+            
+            if (availableChars.length === 0) {
+                currentDifficulty.learnedChars = [];
+                availableChars = [...characters];
+            }
+            
+            const correctIndex = Math.floor(Math.random() * availableChars.length);
+            const correctCharacter = availableChars[correctIndex];
+            gameData.learnedCharacters.push(correctCharacter);
+            currentDifficulty.learnedChars.push(correctCharacter);
+            
+            const wrongCharacters = [];
+            for (let i = 0; i < 3; i++) {
+                const randomIndex = Math.floor(Math.random() * characters.length);
+                const char = characters[randomIndex];
+                
+                if (char.char !== correctCharacter.char && 
+                    !wrongCharacters.some(c => c.char === char.char)) {
+                    wrongCharacters.push(char);
+                }
+            }
+            
+            const cardCharacters = [correctCharacter, ...wrongCharacters];
+            shuffleArray(cardCharacters);
+            
+            cardCharacters.forEach(char => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                
+                const hanzi = document.createElement('div');
+                hanzi.className = 'hanzi';
+                hanzi.textContent = char.char;
+                
+                const pinyin = document.createElement('div');
+                pinyin.className = 'pinyin';
+                pinyin.textContent = char.pinyin;
+                
+                card.appendChild(hanzi);
+                card.appendChild(pinyin);
+                card.addEventListener('click', () => checkAnswer(char, correctCharacter, card));
+                cardsContainer.appendChild(card);
+            });
+            
+            // 延迟播放发音
+            setTimeout(() => {
+                playCharacterSound(correctCharacter.char);
+            }, 800);
+        }
+
+        // 检查答案
+        function checkAnswer(selected, correct, cardElement) {
+            if (selected.char === correct.char) {
+                cardElement.classList.add('correct');
+                gameData.score += 10;
+                scoreDisplay.textContent = gameData.score;
+                gameData.currentStep++;
+                updateProgressBar();
+                
+                setTimeout(() => {
+                    moveBunnyToStep(gameData.currentStep);
+                    if (gameData.currentStep < gameData.totalSteps) {
+                        updateScene();
+                        generateCards();
+                    }
+                }, 1000);
+            } else {
+                cardElement.classList.add('wrong');
+                setTimeout(() => {
+                    cardElement.classList.remove('wrong');
+                }, 500);
+            }
+        }
+
+        // 播放汉字发音
+        function playCharacterSound(character) {
+            if (gameData.speechSupported && 'speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(character);
+                utterance.lang = 'zh-CN';
+                utterance.rate = 0.8;
+                speechSynthesis.speak(utterance);
+            }
+        }
+
+        // 打乱数组顺序
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        // 更新进度条
+        function updateProgressBar() {
+            const progressPercentage = (gameData.currentStep / gameData.totalSteps) * 100;
+            progressFill.style.width = `${progressPercentage}%`;
+        }
+
+        // 显示成功界面
+        function showSuccessScreen() {
+            const successHTML = `
+                <div class="screen success-screen">
+                    <div class="home-icon">
+                        <i class="fas fa-home"></i>
+                    </div>
+                    <h2>小兔子到家啦！</h2>
+                    <p>恭喜你帮助小兔子安全回家！你学会了这些汉字：</p>
+                    
+                    <div class="character-display">
+                        ${gameData.learnedCharacters.map(char => `
+                            <div class="learned-character">
+                                <div class="learned-hanzi">${char.char}</div>
+                                <div class="learned-pinyin">${char.pinyin}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <p>你的得分: <span class="score">${gameData.score}</span> 分</p>
+                    
+                    <div class="level-controls">
+                        <button id="prev-level-btn" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> 上一关
+                        </button>
+                        <button id="play-again-btn" class="btn btn-primary">
+                            <i class="fas fa-redo"></i> 再玩一次
+                        </button>
+                        <button id="next-level-btn" class="btn btn-primary">
+                            下一关 <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.querySelector('.game-container').innerHTML = successHTML;
+            
+            document.getElementById('play-again-btn').addEventListener('click', () => {
+                resetGameContainer();
+                initGame();
+            });
+            
+            document.getElementById('next-level-btn').addEventListener('click', () => {
+                gameData.currentLevelIndex = (gameData.currentLevelIndex + 1) % 3;
+                const levels = ['easy', 'medium', 'hard'];
+                gameData.currentLevel = levels[gameData.currentLevelIndex];
+                updateDifficultyButtons();
+                resetGameContainer();
+                initGame();
+            });
+            
+            document.getElementById('prev-level-btn').addEventListener('click', () => {
+                gameData.currentLevelIndex = (gameData.currentLevelIndex - 1 + 3) % 3;
+                const levels = ['easy', 'medium', 'hard'];
+                gameData.currentLevel = levels[gameData.currentLevelIndex];
+                updateDifficultyButtons();
+                resetGameContainer();
+                initGame();
+            });
+        }
+
+        // 重置游戏容器
+        function resetGameContainer() {
+            document.querySelector('.game-container').innerHTML = `
+                <div id="scene" class="scene" style="background: linear-gradient(to bottom, #87CEEB 30%, #E0F7FA 70%);">
+                    <div id="bunny" class="bunny"></div>
+                    <div class="location-point" style="left: 15%;">1</div>
+                    <div class="location-point" style="left: 30%;">2</div>
+                    <div class="location-point" style="left: 45%;">3</div>
+                    <div class="location-point" style="left: 60%;">4</div>
+                    <div class="location-point" style="left: 75%;">5</div>
+                    <div class="location-point" style="left: 90%; background: #ffcc80;"><i class="fas fa-home"></i></div>
+                    <div style="position: absolute; bottom: 10px; left: 10%; width: 100px; height: 30px; background: #8BC34A; border-radius: 50%;"></div>
+                    <div style="position: absolute; bottom: 0; left: 40%; width: 150px; height: 40px; background: #4CAF50; border-radius: 50% 50% 0 0;"></div>
+                    <div style="position: absolute; bottom: 20px; left: 70%; width: 80px; height: 80px; background: #81C784; border-radius: 50%;"></div>
+                </div>
+                <div class="cards-container" id="cards-container"></div>
+            `;
+        }
+
+        // 更新难度按钮状态
+        function updateDifficultyButtons() {
+            difficultyButtons.forEach(button => {
+                button.classList.remove('active');
+                if (button.dataset.level === gameData.currentLevel) {
+                    button.classList.add('active');
+                }
+            });
+        }
+
+        // 启动游戏
+        document.addEventListener('DOMContentLoaded', function() {
+            // 显示欢迎界面
+            document.querySelector('.control-panel').style.display = 'none';
+            
+            // 开始按钮事件
+            document.getElementById('start-btn').addEventListener('click', function() {
+                // 隐藏欢迎界面
+                document.querySelector('.welcome-screen').style.display = 'none';
+                
+                // 创建游戏界面
+                document.querySelector('.game-container').innerHTML = `
+                    <div id="scene" class="scene" style="background: linear-gradient(to bottom, #87CEEB 30%, #E0F7FA 70%);">
+                        <div id="bunny" class="bunny"></div>
+                        <div class="location-point" style="left: 15%;">1</div>
+                        <div class="location-point" style="left: 30%;">2</div>
+                        <div class="location-point" style="left: 45%;">3</div>
+                        <div class="location-point" style="left: 60%;">4</div>
+                        <div class="location-point" style="left: 75%;">5</div>
+                        <div class="location-point" style="left: 90%; background: #ffcc80;"><i class="fas fa-home"></i></div>
+                        <div style="position: absolute; bottom: 10px; left: 10%; width: 100px; height: 30px; background: #8BC34A; border-radius: 50%;"></div>
+                        <div style="position: absolute; bottom: 0; left: 40%; width: 150px; height: 40px; background: #4CAF50; border-radius: 50% 50% 0 0;"></div>
+                        <div style="position: absolute; bottom: 20px; left: 70%; width: 80px; height: 80px; background: #81C784; border-radius: 50%;"></div>
+                    </div>
+                    <div class="cards-container" id="cards-container"></div>
+                `;
+                
+                // 显示控制面板
+                document.querySelector('.control-panel').style.display = 'flex';
+                
+                // 初始化游戏
+                initGame();
+                
+                // 绑定控制面板事件
+                restartBtn.addEventListener('click', () => {
+                    resetGameContainer();
+                    initGame();
+                });
+                
+                speakBtn.addEventListener('click', () => {
+                    if (gameData.learnedCharacters.length > gameData.currentStep) {
+                        playCharacterSound(gameData.learnedCharacters[gameData.currentStep].char);
+                    }
+                });
+                
+                // 难度选择
+                difficultyButtons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        difficultyButtons.forEach(btn => btn.classList.remove('active'));
+                        button.classList.add('active');
+                        gameData.currentLevel = button.dataset.level;
+                        const levels = ['easy', 'medium', 'hard'];
+                        gameData.currentLevelIndex = levels.indexOf(gameData.currentLevel);
+                        resetGameContainer();
+                        initGame();
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>
